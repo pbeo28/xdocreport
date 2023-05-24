@@ -215,20 +215,25 @@ public class StylableDocument
     private void simulateText()
     {
         int res = 0;
-        try
-        {
-            res = text.go( true );
-        }
-        catch ( DocumentException e )
-        {
-            throw new XWPFConverterException( e );
-        }
-        if ( ColumnText.hasMoreText( res ) )
-        {
-            // text does not fit into current column
-            // split it to a new column
-            columnBreak();
-        }
+        do {
+
+            try {
+                res = text.go(true);
+                if (ColumnText.hasMoreText(res)) {
+                    // text does not fit into current column
+                    // split it to a new column
+                    if (colIdx + 1 < layoutTable.getNumberOfColumns()) {
+                        setColIdx(colIdx + 1);
+                    } else {
+                        pageBreak();
+                    }
+                }
+            } catch (DocumentException e) {
+                throw new XWPFConverterException(e);
+            }
+        } while (ColumnText.hasMoreText(res));
+
+
     }
 
     public StylableParagraph createParagraph( IITextContainer parent )
