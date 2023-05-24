@@ -440,13 +440,48 @@ public class StylableDocument
                     if (colIdx + 1 < layoutTable.getNumberOfColumns()) {
                         setColIdx(colIdx + 1);
                     } else {
-                        pageBreak();
+                        if ( documentEmpty )
+                        {
+                            // no element was added - ignore page break
+                        }
+                        else if ( masterPageJustChanged )
+                        {
+                            // we are just after master page change
+                            // move to a new page but do not initialize column layout
+                            // because it is already done
+                            masterPageJustChanged = false;
+                            super.newPage();
+                        }
+                        else
+                        {
+                            // flush pending content
+                            flushTable();
+                            // check if master page change necessary
+                            // Style nextStyle = setNextActiveMasterPageIfNecessary();
+                            // document new page
+                            super.newPage();
+                            // initialize column layout for new page
+                            // if ( nextStyle == null )
+                            // {
+                            // ordinary page break
+                            layoutTable = StylableDocumentSection.cloneAndClearTable( layoutTable, false );
+                            // }
+                            // else
+                            // {
+                            // // page break with new master page activation
+                            // // style changed so recreate table
+                            // layoutTable =
+                            // StylableDocumentSection.createLayoutTable( getPageWidth(), getAdjustedPageHeight(), nextStyle );
+                            // }
+                            setColIdx( 0 );
+                        }
                     }
                 }
             } catch (DocumentException e) {
                 throw new ODFConverterException(e);
             }
         } while (ColumnText.hasMoreText(res));
+
     }
 
     private void flushTable()
